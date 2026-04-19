@@ -36,41 +36,56 @@ UPDATE STG_OnlineRetail
 SET CustomerID = 'UNKNOWN'
 WHERE CustomerID IS NULL;
 
--- 4. DIMENSION TABLES
+-- 4. CREATE CITIES (3 per country)
+DROP TABLE IF EXISTS TMP_CITY;
 
--- VANPHONGDAIDIEN
+SELECT DISTINCT
+    Country,
+    Country + '_City1' AS City1,
+    Country + '_City2' AS City2,
+    Country + '_City3' AS City3
+INTO TMP_CITY
+FROM STG_OnlineRetail;
+
+-- 5. VANPHONGDAIDIEN (CITIES)
 INSERT INTO VANPHONGDAIDIEN (MaTP, TenTP, DiaChiVP, Bang, ThoiGianThanhLap)
-SELECT 
-    s.Country,
-    s.Country,
-    'Unknown',
-    s.Country,
-    MIN(TRY_CONVERT(DATETIME, s.InvoiceDate))
-FROM STG_OnlineRetail s
-LEFT JOIN VANPHONGDAIDIEN v 
-    ON v.MaTP = s.Country
-WHERE v.MaTP IS NULL
-GROUP BY s.Country;
+SELECT City, City, 'Unknown', Country, GETDATE()
+FROM (
+    SELECT Country, City1 AS City FROM TMP_CITY
+    UNION
+    SELECT Country, City2 FROM TMP_CITY
+    UNION
+    SELECT Country, City3 FROM TMP_CITY
+) t;
 
--- CUAHANG (SAFE KEY)
+-- 6. CUAHANG (3 STORES PER CITY)
 INSERT INTO CUAHANG (MaCH, MaTP, SoDienThoai, ThoiGianMoCua)
 SELECT 
-    'CH_' + CAST(ABS(CHECKSUM(s.Country)) AS VARCHAR(20)),   -- 🔥 safe unique key
-    s.Country,
+    'CH_' + City + '_' + CAST(n AS VARCHAR),
+    City,
     '0000000000',
-    MIN(TRY_CONVERT(DATETIME, s.InvoiceDate))
-FROM STG_OnlineRetail s
-LEFT JOIN CUAHANG c 
-    ON c.MaTP = s.Country
-WHERE c.MaTP IS NULL
-GROUP BY s.Country;
+    GETDATE()
+FROM (
+    SELECT City FROM (
+        SELECT City1 AS City FROM TMP_CITY
+        UNION
+        SELECT City2 FROM TMP_CITY
+        UNION
+        SELECT City3 FROM TMP_CITY
+    ) x
+) c
+CROSS JOIN (VALUES (1),(2),(3)) AS nums(n);
 
--- KHACHHANG (FIXED GROUPING)
+-- 7. KHACHHANG (ASSIGN TO CITY)
 INSERT INTO KHACHHANG (MaKH, TenKH, MaTP, NgayDatHangDau, LoaiKH)
 SELECT 
     s.CustomerID,
     'Customer ' + s.CustomerID,
-    MAX(s.Country),
+
+    -- Assign ONE city per customer
+    MAX(s.Country) + '_City' + 
+        CAST(ABS(CHECKSUM(s.CustomerID)) % 3 + 1 AS VARCHAR),
+
     MIN(TRY_CONVERT(DATETIME, s.InvoiceDate)),
     'CA'
 FROM STG_OnlineRetail s
@@ -79,7 +94,43 @@ LEFT JOIN KHACHHANG k
 WHERE k.MaKH IS NULL
 GROUP BY s.CustomerID;
 
--- MATHANG
+-- 8. CUSTOMER TYPE SUBTABLES
+
+-- Guide pool
+DROP TABLE IF EXISTS TMP_GUIDES;
+CREATE TABLE TMP_GUIDES (
+    GuideID INT IDENTITY(1,1),
+    GuideName NVARCHAR(100)
+);
+
+INSERT INTO TMP_GUIDES (GuideName)
+VALUES
+('Guide A'),('Guide B'),('Guide C'),('Guide D'),('Guide E'),
+('Guide F'),('Guide G'),('Guide H'),('Guide I'),('Guide J'),
+('Guide K'),('Guide L'),('Guide M'),('Guide N'),('Guide O'),
+('Guide P'),('Guide Q'),('Guide R'),('Guide S'),('Guide T');
+
+-- KHACHHANG_DULICH
+INSERT INTO KHACHHANG_DULICH (MaKH, HuongDanVien, ThoiGianCuTru)
+SELECT 
+    k.MaKH,
+    g.GuideName,
+    DATEADD(DAY, ABS(CHECKSUM(k.MaKH)) % 365, '2022-01-01')
+FROM KHACHHANG k
+JOIN TMP_GUIDES g 
+    ON g.GuideID = (ABS(CHECKSUM(k.MaKH)) % 20) + 1
+WHERE ABS(CHECKSUM(k.MaKH)) % 10 < 6;
+
+-- KHACHHANG_BUUDIEN
+INSERT INTO KHACHHANG_BUUDIEN (MaKH, DiaChiBuuDien, ThoiGianNhanHang)
+SELECT 
+    k.MaKH,
+    'Address_' + k.MaKH,
+    DATEADD(DAY, ABS(CHECKSUM(k.MaKH)) % 365, '2022-01-01')
+FROM KHACHHANG k
+WHERE ABS(CHECKSUM(k.MaKH)) % 10 >= 4;
+
+-- 9. MATHANG
 INSERT INTO MATHANG (MaMH, MoTa, KichCo, TrongLuong, Gia, ThoiGianNhapHang)
 SELECT 
     s.StockCode,
@@ -89,26 +140,18 @@ SELECT
     AVG(TRY_CAST(s.UnitPrice AS DECIMAL(10,2))),
     MIN(TRY_CONVERT(DATETIME, s.InvoiceDate))
 FROM STG_OnlineRetail s
-LEFT JOIN MATHANG m 
-    ON m.MaMH = s.StockCode
-WHERE m.MaMH IS NULL
 GROUP BY s.StockCode;
 
--- 5. FACT TABLES
-
--- DONDATHANG
+-- 10. DONDATHANG
 INSERT INTO DONDATHANG (MaDon, NgayDatHang, MaKH)
 SELECT 
     s.InvoiceNo,
     MIN(TRY_CONVERT(DATETIME, s.InvoiceDate)),
     MAX(s.CustomerID)
 FROM STG_OnlineRetail s
-LEFT JOIN DONDATHANG d 
-    ON d.MaDon = s.InvoiceNo
-WHERE d.MaDon IS NULL
 GROUP BY s.InvoiceNo;
 
--- MHDUOCDAT (AGGREGATED)
+-- 11. MHDUOCDAT
 INSERT INTO MHDUOCDAT (MaDon, MaMH, SoLuongDat, GiaDat, ThoiGianDatHang)
 SELECT 
     s.InvoiceNo,
@@ -117,32 +160,29 @@ SELECT
     AVG(TRY_CAST(s.UnitPrice AS DECIMAL(10,2))),
     MAX(TRY_CONVERT(DATETIME, s.InvoiceDate))
 FROM STG_OnlineRetail s
-LEFT JOIN MHDUOCDAT d 
-    ON d.MaDon = s.InvoiceNo AND d.MaMH = s.StockCode
-WHERE d.MaDon IS NULL
 GROUP BY s.InvoiceNo, s.StockCode;
 
--- MHLUUTRU
+-- 12. MHLUUTRU (DISTRIBUTE BY CITY -> STORE)
 INSERT INTO MHLUUTRU (MaCH, MaMH, SoLuongTon, ThoiGianLuuTru)
 SELECT
     c.MaCH,
     s.StockCode,
     SUM(TRY_CAST(s.Quantity AS INT)),
-    MAX(TRY_CONVERT(DATETIME, s.InvoiceDate))
+    GETDATE()
 FROM STG_OnlineRetail s
-JOIN CUAHANG c ON c.MaTP = s.Country
-LEFT JOIN MHLUUTRU m 
-    ON m.MaCH = c.MaCH AND m.MaMH = s.StockCode
-WHERE m.MaCH IS NULL
+JOIN CUAHANG c 
+    ON c.MaTP = s.Country + '_City' + CAST(ABS(CHECKSUM(s.StockCode)) % 3 + 1 AS VARCHAR)
 GROUP BY c.MaCH, s.StockCode;
 
--- 6. CHECK
+-- 13. CHECK
 SELECT COUNT(*) AS STG FROM STG_OnlineRetail;
 SELECT COUNT(*) AS KH FROM KHACHHANG;
+SELECT COUNT(*) AS DL FROM KHACHHANG_DULICH;
+SELECT COUNT(*) AS BD FROM KHACHHANG_BUUDIEN;
 SELECT COUNT(*) AS DON FROM DONDATHANG;
 SELECT COUNT(*) AS CT FROM MHDUOCDAT;
 
--- 7. SAMPLE
+-- 14. SAMPLE
 SELECT TOP 20 *,
     CASE 
         WHEN TRY_CAST(Quantity AS INT) > 0 THEN 'SALE'

@@ -4,9 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "setup:web": "cd apps/web && npm install",
+    "setup:api": "cd apps/api && pip install -r requirements.txt",
+    "setup": "npm run setup:web && npm run setup:api",
+
     "dev:web": "cd apps/web && npm run dev",
     "dev:api": "cd apps/api && uvicorn main:app --reload",
-    "dev": "concurrently \"npm run dev:web\" \"npm run dev:api\""
+    "dev": "concurrently \"npm run dev:web\" \"npm run dev:api\"",
+
+    "start": "npm run setup && npm run dev"
   },
   "keywords": [],
   "author": "",

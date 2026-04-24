@@ -83,6 +83,7 @@
       <ID>Product ID</ID>
       <Name>Product ID</Name>
       <Usage>Key</Usage>
+      <EstimatedCount>3617</EstimatedCount>
       <KeyColumns>
         <KeyColumn dwd:design-time-name="c59aecd0-0ee4-4849-bf87-af685b679bd6">
           <DataType>WChar</DataType>

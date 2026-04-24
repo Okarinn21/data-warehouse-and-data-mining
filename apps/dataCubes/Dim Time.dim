@@ -116,6 +116,7 @@
       <ID>Time ID</ID>
       <Name>Time ID</Name>
       <Usage>Key</Usage>
+      <EstimatedCount>312</EstimatedCount>
       <KeyColumns>
         <KeyColumn dwd:design-time-name="80990b6d-69c4-4d19-99ef-559312ef79d9">
           <DataType>Integer</DataType>
@@ -139,6 +140,7 @@
     <Attribute dwd:design-time-name="27b4a5b5-d281-4486-a47c-06787f6fb608">
       <ID>Month</ID>
       <Name>Month</Name>
+      <EstimatedCount>312</EstimatedCount>
       <KeyColumns>
         <KeyColumn dwd:design-time-name="cd17a47f-1b29-4f27-a36a-0a7ffe69c97d">
           <DataType>Integer</DataType>
@@ -174,6 +176,7 @@
     <Attribute dwd:design-time-name="a7f62401-ed67-4891-9a47-32659f238b62">
       <ID>Quarter</ID>
       <Name>Quarter</Name>
+      <EstimatedCount>104</EstimatedCount>
       <KeyColumns>
         <KeyColumn dwd:design-time-name="99ac82a0-455e-4315-8e04-d7e4ce57e487">
           <DataType>Integer</DataType>
@@ -209,6 +212,7 @@
     <Attribute dwd:design-time-name="b0b09783-20b0-47ca-9628-5bb45d0f026e">
       <ID>Year</ID>
       <Name>Year</Name>
+      <EstimatedCount>26</EstimatedCount>
       <KeyColumns>
         <KeyColumn dwd:design-time-name="42daf869-8a26-494b-a314-5480d1e6dd1c">
           <DataType>Integer</DataType>

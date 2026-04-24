@@ -16,11 +16,12 @@ GO
 
 -- DIM_TIME (chỉ Month, Quarter, Year)
 CREATE TABLE Dim_Time (
-    TimeID INT IDENTITY(1,1) PRIMARY KEY,
-    Month INT,
+    TimeID INT PRIMARY KEY,   -- YYYYMM
+    Year INT,
     Quarter INT,
-    Year INT
+    Month INT
 );
+
 
 -- DIM_CUSTOMER
 CREATE TABLE Dim_Customer (

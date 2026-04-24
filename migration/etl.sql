@@ -2,36 +2,24 @@ USE DataWarehouse;
 GO
 
 -- 1. LOAD DIM_TIME
-INSERT INTO Dim_Time (Month, Quarter, Year)
-SELECT DISTINCT
-    MONTH(NgayDatHang),
-    DATEPART(QUARTER, NgayDatHang),
-    YEAR(NgayDatHang)
-FROM DatabaseMock.dbo.DONDATHANG d
-WHERE NgayDatHang IS NOT NULL
-AND NOT EXISTS (
-    SELECT 1 
-    FROM Dim_Time t
-    WHERE t.Month = MONTH(d.NgayDatHang)
-      AND t.Quarter = DATEPART(QUARTER, d.NgayDatHang)
-      AND t.Year = YEAR(d.NgayDatHang)
-);
+DECLARE @StartDate DATE = '2010-01-01';
+DECLARE @EndDate DATE = '2035-12-01';
 
--- thêm thời gian từ tồn kho luôn (nếu chưa có)
-INSERT INTO Dim_Time (Month, Quarter, Year)
-SELECT DISTINCT
-    MONTH(ThoiGianLuuTru),
-    DATEPART(QUARTER, ThoiGianLuuTru),
-    YEAR(ThoiGianLuuTru)
-FROM DatabaseMock.dbo.MHLUUTRU m
-WHERE ThoiGianLuuTru IS NOT NULL
-AND NOT EXISTS (
-    SELECT 1 
-    FROM Dim_Time t
-    WHERE t.Month = MONTH(m.ThoiGianLuuTru)
-      AND t.Quarter = DATEPART(QUARTER, m.ThoiGianLuuTru)
-      AND t.Year = YEAR(m.ThoiGianLuuTru)
-);
+WITH Months AS (
+    SELECT DATEFROMPARTS(YEAR(@StartDate), MONTH(@StartDate), 1) AS MonthStart
+    UNION ALL
+    SELECT DATEADD(MONTH, 1, MonthStart)
+    FROM Months
+    WHERE MonthStart < @EndDate
+)
+INSERT INTO Dim_Time (TimeID, Year, Quarter, Month)
+SELECT 
+    YEAR(MonthStart) * 100 + MONTH(MonthStart),
+    YEAR(MonthStart),
+    DATEPART(QUARTER, MonthStart),
+    MONTH(MonthStart)
+FROM Months
+OPTION (MAXRECURSION 0);
 
 -- 2. LOAD DIM_CUSTOMER
 INSERT INTO Dim_Customer (CustomerID, TenKH, LoaiKH, ThanhPho)
@@ -84,9 +72,7 @@ FROM DatabaseMock.dbo.MHDUOCDAT mhdd
 JOIN DatabaseMock.dbo.DONDATHANG ddh 
     ON mhdd.MaDon = ddh.MaDon
 JOIN Dim_Time dt
-    ON dt.Month = MONTH(ddh.NgayDatHang)
-   AND dt.Quarter = DATEPART(QUARTER, ddh.NgayDatHang)
-   AND dt.Year = YEAR(ddh.NgayDatHang)
+    ON dt.TimeID = YEAR(ddh.NgayDatHang) * 100 + MONTH(ddh.NgayDatHang)
 WHERE NOT EXISTS (
     SELECT 1
     FROM Fact_Sales fs
@@ -104,16 +90,13 @@ INSERT INTO Fact_Inventory (
 )
 SELECT 
     mhlt.MaMH,
-    dt.TimeID,
+    YEAR(mhlt.ThoiGianLuuTru) * 100 + MONTH(mhlt.ThoiGianLuuTru) AS TimeID,
     mhlt.SoLuongTon
 FROM DatabaseMock.dbo.MHLUUTRU mhlt
-JOIN Dim_Time dt
-    ON dt.Month = MONTH(mhlt.ThoiGianLuuTru)
-   AND dt.Quarter = DATEPART(QUARTER, mhlt.ThoiGianLuuTru)
-   AND dt.Year = YEAR(mhlt.ThoiGianLuuTru)
-WHERE NOT EXISTS (
+WHERE mhlt.ThoiGianLuuTru IS NOT NULL
+AND NOT EXISTS (
     SELECT 1
     FROM Fact_Inventory fi
     WHERE fi.ProductID = mhlt.MaMH
-      AND fi.TimeID = dt.TimeID
+      AND fi.TimeID = YEAR(mhlt.ThoiGianLuuTru) * 100 + MONTH(mhlt.ThoiGianLuuTru)
 );

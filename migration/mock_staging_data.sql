@@ -77,29 +77,34 @@ FROM (
 ) x;
 
 -- 7. KHACHHANG
+WITH CTE AS (
+    SELECT 
+        s.CustomerID,
+        ROW_NUMBER() OVER (ORDER BY s.CustomerID) AS rn,
+        MIN(TRY_CONVERT(DATETIME, s.InvoiceDate)) AS FirstOrderDate
+    FROM STG_OnlineRetail s
+    GROUP BY s.CustomerID
+)
 INSERT INTO KHACHHANG (MaKH, TenKH, MaTP, NgayDatHangDau, LoaiKH)
 SELECT 
-    s.CustomerID,
-    CONCAT(N'Customer ', s.CustomerID),
+    CustomerID,
+    CONCAT(N'Customer ', CustomerID),
 
-    CASE ABS(CHECKSUM(s.CustomerID)) % 4
+    CASE (rn % 4)
         WHEN 0 THEN 'LON'
         WHEN 1 THEN 'MAN'
         WHEN 2 THEN 'BIR'
         ELSE 'LEE'
     END,
 
-    MIN(TRY_CONVERT(DATETIME, s.InvoiceDate)),
-    CASE ABS(CHECKSUM(s.CustomerID)) % 3
+    FirstOrderDate,
+
+    CASE (rn % 3)
         WHEN 0 THEN 'DL'
         WHEN 1 THEN 'BD'
         ELSE 'CA'
     END
-FROM STG_OnlineRetail s
-LEFT JOIN KHACHHANG k 
-    ON k.MaKH = s.CustomerID
-WHERE k.MaKH IS NULL
-GROUP BY s.CustomerID;
+FROM CTE;
 
 -- 8. CUSTOMER TYPE TABLES
 DROP TABLE IF EXISTS TMP_GUIDES;
@@ -162,7 +167,7 @@ INSERT INTO DONDATHANG (MaDon, NgayDatHang, MaKH)
 SELECT 
     s.InvoiceNo,
     MIN(TRY_CONVERT(DATETIME, s.InvoiceDate)),
-    MAX(s.CustomerID)
+    MIN(s.CustomerID)
 FROM STG_OnlineRetail s
 GROUP BY s.InvoiceNo;
 
@@ -181,20 +186,22 @@ GROUP BY s.InvoiceNo, s.StockCode;
 
 WITH Sales AS (
     SELECT
-        c.MaCH,
+        ch.MaCH,
         s.StockCode AS MaMH,
         SUM(TRY_CAST(s.Quantity AS INT)) AS TotalSold,
         MAX(TRY_CONVERT(DATETIME, s.InvoiceDate)) AS LastSaleDate
     FROM STG_OnlineRetail s
-    JOIN CUAHANG c 
-        ON c.MaTP = 
-            CASE ABS(CHECKSUM(s.InvoiceNo)) % 4
-                WHEN 0 THEN 'LON'
-                WHEN 1 THEN 'MAN'
-                WHEN 2 THEN 'BIR'
-                ELSE 'LEE'
-            END
-    GROUP BY c.MaCH, s.StockCode
+
+    JOIN DONDATHANG d 
+        ON d.MaDon = s.InvoiceNo
+
+    JOIN KHACHHANG k 
+        ON k.MaKH = d.MaKH
+
+    JOIN CUAHANG ch 
+        ON ch.MaTP = k.MaTP  
+
+    GROUP BY ch.MaCH, s.StockCode
 )
 
 INSERT INTO MHLUUTRU (MaCH, MaMH, SoLuongTon, ThoiGianLuuTru)

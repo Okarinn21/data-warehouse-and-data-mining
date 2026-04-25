@@ -62,7 +62,7 @@ const CUSTOMER_TYPES = [
   { value: '', label: 'All' },
   { value: 'DL', label: 'Du lich (DL)' },
   { value: 'BD', label: 'Buu dien (BD)' },
-  { value: 'CA', label: 'Ca nhan (CA)' },
+  { value: 'CA', label: 'Ca hai (CA)' },
 ];
 const CITIES = ['', 'London', 'Manchester', 'Birmingham', 'Leeds'];
 
@@ -353,7 +353,7 @@ export default function AnalyticsPage() {
   const [mainData, setMainData] = useState<OlapResult | null>(null);
   const [mainLoading, setMainLoading] = useState(false);
   const [cityData, setCityData] = useState<OlapResult | null>(null);
-  const [cityLoading, setCityLoading] = useState(false);
+  const [cityLoading, setCityLoading] = useState(true);
 
   // Pivot
   const [pivotRow, setPivotRow] = useState('customerType');
@@ -366,7 +366,6 @@ export default function AnalyticsPage() {
   // ── load KPI + city (once) ────────────────────────────────────────────────
   useEffect(() => {
     api.kpi().then(setKpi).catch(e => setError(String(e)));
-    setCityLoading(true);
     api.byCity().then(setCityData).catch(() => null).finally(() => setCityLoading(false));
   }, []);
 

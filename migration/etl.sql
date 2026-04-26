@@ -81,22 +81,3 @@ WHERE NOT EXISTS (
       AND fs.TimeID = dt.TimeID
       AND fs.Quantity = mhdd.SoLuongDat
 );
-
--- 5. LOAD FACT_INVENTORY
-INSERT INTO Fact_Inventory (
-    ProductID,
-    TimeID,
-    StockQuantity
-)
-SELECT 
-    mhlt.MaMH,
-    YEAR(mhlt.ThoiGianLuuTru) * 100 + MONTH(mhlt.ThoiGianLuuTru) AS TimeID,
-    mhlt.SoLuongTon
-FROM DatabaseMock.dbo.MHLUUTRU mhlt
-WHERE mhlt.ThoiGianLuuTru IS NOT NULL
-AND NOT EXISTS (
-    SELECT 1
-    FROM Fact_Inventory fi
-    WHERE fi.ProductID = mhlt.MaMH
-      AND fi.TimeID = YEAR(mhlt.ThoiGianLuuTru) * 100 + MONTH(mhlt.ThoiGianLuuTru)
-);

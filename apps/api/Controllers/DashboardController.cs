@@ -38,11 +38,4 @@ public class DashboardController : ControllerBase
         try { return Ok(await _olap.GetSalesByProduct(topN)); }
         catch (Exception ex) { return StatusCode(500, ex.Message); }
     }
-
-    [HttpGet("inventory")]
-    public async Task<IActionResult> Inventory([FromQuery] int? year)
-    {
-        try { return Ok(await _olap.GetInventory(year)); }
-        catch (Exception ex) { return StatusCode(500, ex.Message); }
-    }
 }

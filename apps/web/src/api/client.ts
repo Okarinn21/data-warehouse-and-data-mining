@@ -17,7 +17,6 @@ export const api = {
   salesTrend: (groupBy: string) => get<OlapResult>(`/dashboard/sales-trend?groupBy=${groupBy}`),
   byCity: () => get<OlapResult>('/dashboard/by-city'),
   byProduct: (topN?: number) => get<OlapResult>(`/dashboard/by-product${topN ? `?topN=${topN}` : ''}`),
-  inventory: (year?: number) => get<OlapResult>(`/dashboard/inventory${year ? `?year=${year}` : ''}`),
 
   // OLAP
   rollup: (level: string) => get<OlapResult>(`/olap/rollup?level=${level}`),

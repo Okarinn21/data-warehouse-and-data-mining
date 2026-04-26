@@ -486,24 +486,6 @@ public class OlapService : IOlapService
         return FormatDynamicResult("DASHBOARD", await conn.QueryAsync(sql));
     }
 
-    public async Task<OlapResult> GetInventory(int? year = null)
-    {
-        using var conn = new SqlConnection(_sqlCs);
-        string whereClause = year.HasValue ? "WHERE t.Year = @Year" : "";
-        string sql = $"""
-            SELECT TOP 15
-                p.MoTa AS Label,
-                SUM(i.StockQuantity) AS [Stock Quantity]
-            FROM DataWarehouse.dbo.Fact_Inventory i
-            JOIN DataWarehouse.dbo.Dim_Product p ON i.ProductID = p.ProductID
-            JOIN DataWarehouse.dbo.Dim_Time t ON i.TimeID = t.TimeID
-            {whereClause}
-            GROUP BY p.MoTa
-            ORDER BY [Stock Quantity] DESC
-            """;
-        return FormatDynamicResult("INVENTORY", await conn.QueryAsync(sql, new { Year = year }));
-    }
-
     // ── Helpers ────────────────────────────────────────────────────────────────
 
     private static string GetMdxMembers(string dim) => dim switch

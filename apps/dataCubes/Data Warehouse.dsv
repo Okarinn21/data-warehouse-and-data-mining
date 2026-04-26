@@ -118,22 +118,6 @@
                 </xs:sequence>
               </xs:complexType>
             </xs:element>
-            <xs:element name="dbo_Fact_Inventory" msprop:DbTableName="Fact_Inventory" msprop:FriendlyName="Fact_Inventory" msprop:TableType="Table" msprop:DbSchemaName="dbo" msprop:design-time-name="694778ae-6ccb-4770-8740-108b7afab496">
-              <xs:complexType>
-                <xs:sequence>
-                  <xs:element name="InventoryID" msdata:ReadOnly="true" msdata:AutoIncrement="true" msprop:FriendlyName="InventoryID" msprop:DbColumnName="InventoryID" msprop:design-time-name="0aef56b3-679c-42c3-a077-e02f3f07e334" type="xs:int" />
-                  <xs:element name="ProductID" msprop:FriendlyName="ProductID" msprop:DbColumnName="ProductID" msprop:design-time-name="7e33be79-22f5-46b2-ac00-344d11060e30" minOccurs="0">
-                    <xs:simpleType>
-                      <xs:restriction base="xs:string">
-                        <xs:maxLength value="50" />
-                      </xs:restriction>
-                    </xs:simpleType>
-                  </xs:element>
-                  <xs:element name="TimeID" msprop:FriendlyName="TimeID" msprop:DbColumnName="TimeID" msprop:design-time-name="6f29808c-c228-46f2-94c6-691811f72922" type="xs:int" minOccurs="0" />
-                  <xs:element name="StockQuantity" msprop:FriendlyName="StockQuantity" msprop:DbColumnName="StockQuantity" msprop:design-time-name="47483496-793b-4ae1-95c4-c59f5c5a1c1e" type="xs:int" minOccurs="0" />
-                </xs:sequence>
-              </xs:complexType>
-            </xs:element>
             <xs:element name="dbo_Fact_Sales" msprop:DbTableName="Fact_Sales" msprop:FriendlyName="Fact_Sales" msprop:TableType="Table" msprop:DbSchemaName="dbo" msprop:design-time-name="ba0a93a3-ba38-4809-ad2d-6798291d5dd6">
               <xs:complexType>
                 <xs:sequence>
@@ -173,10 +157,6 @@
           <xs:selector xpath=".//dbo_Dim_Time" />
           <xs:field xpath="TimeID" />
         </xs:unique>
-        <xs:unique name="dbo_Fact_Inventory_Constraint1" msdata:ConstraintName="Constraint1" msdata:PrimaryKey="true">
-          <xs:selector xpath=".//dbo_Fact_Inventory" />
-          <xs:field xpath="InventoryID" />
-        </xs:unique>
         <xs:unique name="dbo_Fact_Sales_Constraint1" msdata:ConstraintName="Constraint1" msdata:PrimaryKey="true">
           <xs:selector xpath=".//dbo_Fact_Sales" />
           <xs:field xpath="SalesID" />
@@ -191,14 +171,6 @@
         </xs:keyref>
         <xs:keyref name="FK__Fact_Sale__Produ__5165187F" refer="dbo_Dim_Product_Constraint1">
           <xs:selector xpath=".//dbo_Fact_Sales" />
-          <xs:field xpath="ProductID" />
-        </xs:keyref>
-        <xs:keyref name="FK__Fact_Inve__TimeI__5629CD9C" refer="dbo_Dim_Time_Constraint1">
-          <xs:selector xpath=".//dbo_Fact_Inventory" />
-          <xs:field xpath="TimeID" />
-        </xs:keyref>
-        <xs:keyref name="FK__Fact_Inve__Produ__5535A963" refer="dbo_Dim_Product_Constraint1">
-          <xs:selector xpath=".//dbo_Fact_Inventory" />
           <xs:field xpath="ProductID" />
         </xs:keyref>
       </xs:element>

@@ -43,7 +43,7 @@ public class OlapController : ControllerBase
     }
 
     /// <summary>Dice: filter by time range (TimeID=YYYYMM), customer type, city</summary>
-    [HttpGet("dice")]
+    [HttpGet("dice")]   
     public async Task<IActionResult> Dice(
         [FromQuery] int? fromTimeId,
         [FromQuery] int? toTimeId,

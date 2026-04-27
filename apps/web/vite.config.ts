@@ -9,7 +9,7 @@ export default defineConfig({
     allowedHosts: ['.trycloudflare.com'],
     proxy: {
       '/api': {
-        target: 'https://charity-calm-admission-expanding.trycloudflare.com',
+        target: 'https://element-interviews-surgeons-native.trycloudflare.com',
         changeOrigin: true,
       },
     },

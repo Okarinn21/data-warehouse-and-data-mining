@@ -210,7 +210,7 @@ public class OlapService : IOlapService
                 FROM DataWarehouse.dbo.Fact_Sales s
                 JOIN DataWarehouse.dbo.Dim_Time t ON s.TimeID = t.TimeID
                 WHERE t.Year = @Year AND t.Quarter = @Quarter
-                GROUP BY t.Month
+                GROUP BY t.Year, t.Month
                 ORDER BY t.Month
                 """;
             return FormatDynamicResult("DRILLDOWN", await conn.QueryAsync(sql, new { Year = year, Quarter = quarter }));

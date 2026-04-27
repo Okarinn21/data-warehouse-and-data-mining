@@ -13,5 +13,4 @@ public interface IOlapService
     Task<OlapResult> GetSalesTrend(string groupBy);
     Task<OlapResult> GetSalesByCity();
     Task<OlapResult> GetSalesByProduct(int? topN = null);
-    Task<OlapResult> GetInventory(int? year = null);
 }

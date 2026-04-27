@@ -59,28 +59,12 @@ CREATE TABLE Fact_Sales (
     FOREIGN KEY (TimeID) REFERENCES Dim_Time(TimeID)
 );
 
--- FACT_INVENTORY
-CREATE TABLE Fact_Inventory (
-    InventoryID INT IDENTITY(1,1) PRIMARY KEY,
-    ProductID VARCHAR(50),
-    TimeID INT,
-    StockQuantity INT,
-
-    FOREIGN KEY (ProductID) REFERENCES Dim_Product(ProductID),
-    FOREIGN KEY (TimeID) REFERENCES Dim_Time(TimeID)
-);
-
-
 -- 4. INDEXES
 
 -- FACT_SALES INDEXES
 CREATE INDEX idx_sales_customer ON Fact_Sales(CustomerID);
 CREATE INDEX idx_sales_product ON Fact_Sales(ProductID);
 CREATE INDEX idx_sales_time ON Fact_Sales(TimeID);
-
--- FACT_INVENTORY INDEXES
-CREATE INDEX idx_inventory_product ON Fact_Inventory(ProductID);
-CREATE INDEX idx_inventory_time ON Fact_Inventory(TimeID);
 
 -- DIMENSION INDEXES
 CREATE INDEX idx_customer ON Dim_Customer(CustomerID);

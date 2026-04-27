@@ -9,7 +9,7 @@ export default defineConfig({
     allowedHosts: ['.trycloudflare.com'],
     proxy: {
       '/api': {
-        target: 'https://olive-synthesis-peter-pizza.trycloudflare.com',
+        target: 'https://charity-calm-admission-expanding.trycloudflare.com',
         changeOrigin: true,
       },
     },

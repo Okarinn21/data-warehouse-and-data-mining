@@ -103,7 +103,7 @@ public class OlapService : IOlapService
     {
         string sql = level switch
         {
-            "year" => """
+            "year" => """   
                 SELECT CAST(t.Year AS NVARCHAR(4)) AS Label,
                     SUM(s.TotalAmount) AS [Total Amount],
                     SUM(s.Quantity) AS Quantity,
@@ -183,6 +183,7 @@ public class OlapService : IOlapService
             int year = int.Parse(parentKey);
             const string sql = """
                 SELECT 'Q' + CAST(t.Quarter AS NVARCHAR(1)) AS Label,
+                    t.Year,                          
                     t.Quarter,
                     SUM(s.TotalAmount) AS [Total Amount],
                     SUM(s.Quantity) AS Quantity,
@@ -190,7 +191,7 @@ public class OlapService : IOlapService
                 FROM DataWarehouse.dbo.Fact_Sales s
                 JOIN DataWarehouse.dbo.Dim_Time t ON s.TimeID = t.TimeID
                 WHERE t.Year = @Year
-                GROUP BY t.Quarter
+                GROUP BY t.Year, t.Quarter           
                 ORDER BY t.Quarter
                 """;
             return FormatDynamicResult("DRILLDOWN", await conn.QueryAsync(sql, new { Year = year }));

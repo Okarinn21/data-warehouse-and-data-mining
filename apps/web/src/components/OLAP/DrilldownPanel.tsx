@@ -121,7 +121,7 @@ export default function DrilldownPanel() {
       </div>
 
       <div style={{ background: 'var(--card-bg)', borderRadius: 'var(--radius-lg)', padding: 20, boxShadow: 'var(--shadow-sm)', marginBottom: 16 }}>
-        <OlapChart result={result} valueKey="Total Amount" />
+        <OlapChart result={result} valueKey="Total Amount" onBarClick={handleDrill}/>
       </div>
 
       <div style={{ background: 'var(--card-bg)', borderRadius: 'var(--radius-lg)', padding: 20, boxShadow: 'var(--shadow-sm)' }}>

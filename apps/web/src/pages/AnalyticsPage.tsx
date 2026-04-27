@@ -213,7 +213,14 @@ function MainChart({
               stroke="#3b82f6"
               strokeWidth={2}
               dot={{ r: 4, fill: '#3b82f6' }}
-              activeDot={{ r: 6, cursor: canDrill ? 'pointer' : undefined }}
+              activeDot={{
+                r: 6,
+                cursor: canDrill ? 'pointer' : undefined,
+                onClick: canDrill ? (_: unknown, payload: any) => {
+                  if (!payload?.payload?._row) return;
+                  onBarClick(payload.payload._row);
+                } : undefined,
+              }}
             />
           </LineChart>
         </ResponsiveContainer>

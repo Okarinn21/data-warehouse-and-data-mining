@@ -65,11 +65,8 @@ export default function OlapChart({
           fill="#3b82f6"
           style={{ cursor: onBarClick ? 'pointer' : 'default' }}
           onClick={(data: any) => {
-            if (!onBarClick) return;
-            const payload = data?.payload;
-            if (!payload) return;
-
-            onBarClick(payload.raw, payload.fullLabel);
+            if (!onBarClick || !data) return;
+            onBarClick(data.raw, data.fullLabel);
           }}
         />
       </BarChart>

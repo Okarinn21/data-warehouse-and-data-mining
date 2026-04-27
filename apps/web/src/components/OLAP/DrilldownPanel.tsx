@@ -37,18 +37,21 @@ export default function DrilldownPanel() {
   const handleDrill = async (row: Record<string, unknown>, label: string) => {
     if (currentLevel === 'month') return;
 
-    const yearStr = String(row['Year'] ?? label);
-    const quarterStr = String(row['Quarter'] ?? '');
     let nextLevel: string;
     let parentKey: string;
 
     if (currentLevel === 'year') {
+      // label = "2010", "2011"
       nextLevel = 'quarter';
-      parentKey = yearStr;
+      parentKey = label;
     } else {
-      nextLevel = 'month';
-      parentKey = `${yearStr}:${quarterStr}`;
-    }
+    // currentLevel === 'quarter'
+    // row['Year'] có sẵn từ response API
+    const yearStr = String(row['Year'] ?? '');
+    const quarterNum = label.replace(/\D/g, ''); // "Q1" → "1"
+    nextLevel = 'month';
+    parentKey = `${yearStr}:${quarterNum}`; // "2010:1" ✅
+  }
 
     setLoading(true);
     setError(null);
@@ -94,7 +97,6 @@ export default function DrilldownPanel() {
         badge="OLAP Operation 2"
       />
 
-      {/* Breadcrumb */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, fontSize: 13 }}>
         <span
           style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 500 }}
@@ -106,7 +108,11 @@ export default function DrilldownPanel() {
           <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ color: 'var(--text-muted)' }}>›</span>
             <span
-              style={{ color: i === breadcrumbs.length - 1 ? 'var(--text)' : 'var(--primary)', cursor: i < breadcrumbs.length - 1 ? 'pointer' : 'default', fontWeight: 500 }}
+              style={{
+                color: i === breadcrumbs.length - 1 ? 'var(--text)' : 'var(--primary)',
+                cursor: i < breadcrumbs.length - 1 ? 'pointer' : 'default',
+                fontWeight: 500
+              }}
               onClick={() => i < breadcrumbs.length - 1 && handleBreadcrumb(i)}
             >
               {b.label}
@@ -121,7 +127,7 @@ export default function DrilldownPanel() {
       </div>
 
       <div style={{ background: 'var(--card-bg)', borderRadius: 'var(--radius-lg)', padding: 20, boxShadow: 'var(--shadow-sm)', marginBottom: 16 }}>
-        <OlapChart result={result} valueKey="Total Amount" onBarClick={handleDrill}/>
+        <OlapChart result={result} valueKey="Total Amount" onBarClick={handleDrill} />
       </div>
 
       <div style={{ background: 'var(--card-bg)', borderRadius: 'var(--radius-lg)', padding: 20, boxShadow: 'var(--shadow-sm)' }}>

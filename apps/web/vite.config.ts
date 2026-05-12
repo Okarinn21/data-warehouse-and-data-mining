@@ -9,7 +9,7 @@ export default defineConfig({
     allowedHosts: ['.trycloudflare.com'],
     proxy: {
       '/api': {
-        target: 'https://element-interviews-surgeons-native.trycloudflare.com',
+        target: 'https://material-rec-balance-environments.trycloudflare.com',
         changeOrigin: true,
       },
     },

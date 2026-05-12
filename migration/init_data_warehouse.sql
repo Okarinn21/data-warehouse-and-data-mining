@@ -61,12 +61,54 @@ CREATE TABLE Fact_Sales (
 
 -- 4. INDEXES
 
--- FACT_SALES INDEXES
-CREATE INDEX idx_sales_customer ON Fact_Sales(CustomerID);
-CREATE INDEX idx_sales_product ON Fact_Sales(ProductID);
-CREATE INDEX idx_sales_time ON Fact_Sales(TimeID);
+-- ── Fact_Sales ──────────────────────────────────────────────────────────
+-- Lý thuyết Star Schema DW: mỗi FK trên fact table cần non-clustered covering index.
+-- Key column = FK (dùng để JOIN từ dimension sang fact),
+-- INCLUDE = measure columns (TotalAmount, Quantity) -> tránh key lookup khi aggregate.
 
--- DIMENSION INDEXES
-CREATE INDEX idx_customer ON Dim_Customer(CustomerID);
-CREATE INDEX idx_product ON Dim_Product(ProductID);
-CREATE INDEX idx_time ON Dim_Time(TimeID);
+CREATE INDEX idx_sales_time
+    ON Fact_Sales(TimeID)
+    INCLUDE (TotalAmount, Quantity);
+
+CREATE INDEX idx_sales_customer
+    ON Fact_Sales(CustomerID)
+    INCLUDE (TotalAmount, Quantity);
+
+CREATE INDEX idx_sales_product
+    ON Fact_Sales(ProductID)
+    INCLUDE (TotalAmount, Quantity);
+
+-- Composite index cho Dice query lọc đồng thời nhiều chiều (TimeID range + FK join)
+CREATE INDEX idx_sales_composite
+    ON Fact_Sales(TimeID, CustomerID, ProductID)
+    INCLUDE (TotalAmount, Quantity);
+
+-- ── Dim_Time ────────────────────────────────────────────────────────────
+-- PK (TimeID) đã có clustered index tự động -> không tạo thêm index riêng trên PK.
+-- Composite index theo phân cấp thời gian để tối ưu GROUP BY Year/Quarter/Month
+-- trong các phép Roll-Up / Drill-Down.
+
+CREATE INDEX idx_time_hierarchy
+    ON Dim_Time(Year, Quarter, Month)
+    INCLUDE (TimeID);
+
+-- ── Dim_Customer ────────────────────────────────────────────────────────
+-- PK (CustomerID) đã có clustered index tự động -> không tạo thêm index riêng trên PK.
+-- Index trên các cột filter thấp cardinality (LoaiKH) và trung bình (ThanhPho)
+-- dùng trong mệnh đề WHERE của Slice / Dice.
+
+CREATE INDEX idx_customer_city
+    ON Dim_Customer(ThanhPho)
+    INCLUDE (CustomerID, LoaiKH);
+
+CREATE INDEX idx_customer_type
+    ON Dim_Customer(LoaiKH)
+    INCLUDE (CustomerID, ThanhPho);
+
+-- ── Dim_Product ─────────────────────────────────────────────────────────
+-- PK (ProductID) đã có clustered index tự động -> không tạo thêm index riêng trên PK.
+-- Index trên MoTa để tối ưu filter / GROUP BY theo tên sản phẩm.
+
+CREATE INDEX idx_product_desc
+    ON Dim_Product(MoTa)
+    INCLUDE (ProductID, Gia);

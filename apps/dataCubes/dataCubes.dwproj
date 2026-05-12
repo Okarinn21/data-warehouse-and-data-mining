@@ -17,16 +17,6 @@
         </ProjectItem>
       </Dependencies>
     </ProjectItem>
-    <ProjectItem>
-      <Name>inventory.cube</Name>
-      <FullPath>inventory.cube</FullPath>
-      <Dependencies>
-        <ProjectItem>
-          <Name>inventory.partitions</Name>
-          <FullPath>inventory.partitions</FullPath>
-        </ProjectItem>
-      </Dependencies>
-    </ProjectItem>
   </Cubes>
   <Dimensions>
     <ProjectItem>

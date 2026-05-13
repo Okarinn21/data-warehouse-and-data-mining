@@ -9,7 +9,7 @@ export default defineConfig({
     allowedHosts: ['.trycloudflare.com'],
     proxy: {
       '/api': {
-        target: 'https://material-rec-balance-environments.trycloudflare.com',
+        target: 'http://localhost:5154',
         changeOrigin: true,
       },
     },
